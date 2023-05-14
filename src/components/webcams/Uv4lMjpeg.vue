@@ -62,25 +62,51 @@ export default class Uv4lMjpeg extends Mixins(BaseMixin) {
     }
 
     beforeDestroy() {
+        console.warn('beforeDestroy')
+
         document.removeEventListener('visibilitychange', this.documentVisibilityChanged)
         this.stopStream()
     }
 
     startStream() {
-        if (this.isVisible) return
+        console.warn('Preparing to start stream')
 
-        if (this.$refs.webcamUv4lMjpegImage) this.$refs.webcamUv4lMjpegImage.setAttribute('src', this.url)
+        if (this.isVisible) {
+            console.warn('Unable to start stream, already visible')
+            return
+        }
+
+        if (this.$refs.webcamUv4lMjpegImage) {
+            console.warn('Starting stream')
+            this.$refs.webcamUv4lMjpegImage.setAttribute('src', this.url)
+        } else {
+            console.warn('Could not start stream')
+            throw new Error('Could not start stream, webcamUv4lMjpegImage not found')
+        }
     }
 
     stopStream() {
+        console.warn('Preparing to stop stream')
+
+        // HACK: Workaround for a known browser issue (see link below)
+        //       https://bugs.chromium.org/p/chromium/issues/detail?id=73395
+        console.warn('Calling window.stop()')
+        window.stop()
+
         if (this.$refs.webcamUv4lMjpegImage) {
+            console.warn('Stopping stream')
             this.$refs.webcamUv4lMjpegImage.removeAttribute('src')
             URL.revokeObjectURL(this.url)
+        } else {
+            console.warn('Could not stop stream')
+            throw new Error('Could not step stream, webcamUv4lMjpegImage not found')
         }
     }
 
     // this function checks if the browser tab was changed
     documentVisibilityChanged() {
+        console.warn('documentVisibilityChanged')
+
         const visibility = document.visibilityState
         this.isVisibleDocument = visibility === 'visible'
         if (!this.isVisibleDocument) this.stopStream()
@@ -89,20 +115,29 @@ export default class Uv4lMjpeg extends Mixins(BaseMixin) {
 
     // this function checks if the webcam is in the viewport
     viewportVisibilityChanged(newVal: boolean) {
+        console.warn('viewportVisibilityChanged', newVal)
+
         this.isVisibleViewport = newVal
         this.visibilityChanged()
     }
 
     visibilityChanged() {
+        console.warn('visibilityChanged')
+
         if (this.isVisibleViewport && this.isVisibleDocument) {
+            console.warn('visibilityChanged: calling startStream')
             this.startStream()
             return
+        } else {
+            console.warn('visibilityChanged: calling stopStream')
         }
 
         this.stopStream()
     }
 
     onload() {
+        console.warn('onload')
+
         if (this.aspectRatio === null && this.$refs.webcamUv4lMjpegImage) {
             this.aspectRatio =
                 this.$refs.webcamUv4lMjpegImage.naturalWidth / this.$refs.webcamUv4lMjpegImage.naturalHeight
@@ -111,6 +146,8 @@ export default class Uv4lMjpeg extends Mixins(BaseMixin) {
 
     @Watch('url')
     async urlChanged() {
+        console.warn('urlChanged', this.url, 'calling stopStream and startStream')
+
         await this.stopStream()
         await this.startStream()
     }
