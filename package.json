@@ -37,7 +37,7 @@
         "@types/node": "^18.0.0",
         "@types/overlayscrollbars": "^1.12.1",
         "@uiw/codemirror-theme-vscode": "^4.19.11",
-        "axios": "^0.27.0",
+        "axios": "^0.34.0",
         "codemirror": "^6.0.1",
         "core-js": "^3.16.0",
         "echarts": "^5.2.2",
